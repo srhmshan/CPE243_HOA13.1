@@ -1,0 +1,4 @@
+---
+
+- name: Delete access rule that denies access from src to dest
+  shell: sudo ufw delete deny from 192.168.56.106
