@@ -1,0 +1,42 @@
+---
+- name: Block IP address
+  hosts:
+    - ubuntu
+    - centos
+  become: true
+
+  tasks:
+    - name: Block IP address (Ubuntu)
+      when: "'ubuntu' in group_names"
+      ufw:
+        rule: deny
+        proto: any
+        from_ip: 192.168.56.110
+
+    - name: Check Status on Ubuntu
+      when: "'ubuntu' in group_names"
+      shell: sudo ufw status
+      register: ubuntu_fw_stat
+
+    - name: Print firewall status on Ubuntu
+      when: "'ubuntu' in group_names"
+      debug:
+        var: ubuntu_fw_stat.stdout_lines
+
+    - name: Block IP address (CentOS)
+      when: "'centos' in group_names"
+      firewalld:
+        permanent: true
+        state: enabled
+        zone: public
+        source: 192.168.56.108
+
+    - name: Check Status on CentOS
+      when: "'centos' in group_names"
+      shell: sudo firewall-cmd --zone=public --list-all
+      register: centos_fw_stat
+
+    - name: Print firewall status on CentOS
+      when: "'centos' in group_names"
+      debug:
+        var: centos_fw_stat.stdout_lines

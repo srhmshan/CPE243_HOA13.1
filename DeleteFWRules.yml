@@ -1,0 +1,42 @@
+---
+- name: Delete block list entry
+  hosts:
+    - ubuntu
+    - centos
+  become: true
+
+  tasks:
+    - name: Unblock IP address on Ubuntu
+      when: "'ubuntu' in group_names"
+      ufw:
+        rule: allow
+        proto: any
+        from_ip: 192.168.56.110
+
+    - name: Checking Status on Ubuntu
+      when: "'ubuntu' in group_names"
+      shell: sudo ufw status
+      register: ubuntu_fw_stat
+
+    - name: Printing firewall status on Ubuntu
+      when: "'ubuntu' in group_names"
+      debug:
+        var: ubuntu_fw_stat.stdout_lines
+
+    - name: Unblock IP address on CentOS
+      when: "'centos' in group_names"
+      firewalld:
+        permanent: true
+        state: enabled
+        zone: public
+        source: 192.168.56.108
+
+    - name: Checking Status on CentOS
+      when: "'centos' in group_names"
+      shell: sudo firewall-cmd --zone=public --list-all
+      register: centos_fw_stat
+
+    - name: Printing firewall status on CentOS
+      when: "'centos' in group_names"
+      debug:
+        var: centos_fw_stat.stdout_lines
